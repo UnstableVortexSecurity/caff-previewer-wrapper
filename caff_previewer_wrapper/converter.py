@@ -4,7 +4,7 @@ from flask import current_app
 import werkzeug.exceptions
 
 
-def run_abstract_converter(converter: str, source: str, destination: str) -> int:
+def run_abstract_converter(converter: str, source: str, destination: str, extra_args: list = None) -> int:
     """
     Just runs a binary and gives it two arguments
     :param converter: the converter binary to run
@@ -15,7 +15,10 @@ def run_abstract_converter(converter: str, source: str, destination: str) -> int
     if not (os.path.isfile(source) and os.path.isfile(converter)):
         raise FileNotFoundError("Source or converter binary does not exists")
 
-    completed_process = subprocess.run([converter, source, destination],  # nosec: Concerning arguments checked above
+    if not extra_args:
+        extra_args = []
+
+    completed_process = subprocess.run([converter, *extra_args, source, destination],  # nosec: Concerning arguments checked above
                                        timeout=current_app.config['CONVERSION_TIMEOUT'], env={})
 
     return completed_process.returncode
@@ -41,6 +44,6 @@ def convert_tga_to_png(source: str, destination: str):
     :param source: path of the source TGA file (must exists)
     :param destination: path of the destination TGA file (will be created)
     """
-    ret = run_abstract_converter(current_app.config['IMAGEMAGICK_CONVERT_BINARY'], source, destination)
+    ret = run_abstract_converter(current_app.config['IMAGEMAGICK_CONVERT_BINARY'], source, destination, ['-auto-orient'])
     if ret != 0:
         raise RuntimeError(f"Image magick convert returned an unexpected error code: {ret}")
