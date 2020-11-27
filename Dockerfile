@@ -1,7 +1,5 @@
-FROM registry.kmlabz.com/unstablevortex/caff-previewer:latest AS caffsrc
-
 FROM python:3.8-alpine
-COPY --from=caffsrc /usr/local/bin/caff_previewer /usr/local/bin/caff_previewer
+COPY --from=registry.kmlabz.com/unstablevortex/caff-previewer:latest /usr/local/bin/caff_previewer /usr/local/bin/caff_previewer
 
 WORKDIR /app
 
