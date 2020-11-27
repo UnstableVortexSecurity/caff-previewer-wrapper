@@ -5,7 +5,7 @@ import hashlib
 
 def write_file_to_fd_while_calculating_md5(fd: int) -> str:
     chunksize = current_app.config['RECIEVE_CHUNKSIZE']
-    m = hashlib.md5()
+    m = hashlib.md5()  # nosec: md5 is used only for integrity checking here
 
     total_recieved = 0
 
@@ -28,7 +28,7 @@ def write_file_to_fd_while_calculating_md5(fd: int) -> str:
 
 
 def create_md5_sum_for_file(fname):
-    m = hashlib.md5()
+    m = hashlib.md5()  # nosec: md5 is used only for integrity checking here
 
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):

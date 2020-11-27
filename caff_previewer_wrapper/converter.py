@@ -1,4 +1,5 @@
-import subprocess
+import os.path
+import subprocess  # nosec: That's the whole point of this application
 from flask import current_app
 import werkzeug.exceptions
 
@@ -11,10 +12,14 @@ def run_abstract_converter(converter: str, source: str, destination: str) -> int
     :param destination: destination file
     :returns: exitcode of the converter
     """
-    completed_process = subprocess.run([converter, source, destination],
+    if not (os.path.isfile(source) and os.path.isfile(converter)):
+        raise FileNotFoundError("Source or converter binary does not exists")
+
+    completed_process = subprocess.run([converter, source, destination],  # nosec: Concerning arguments checked above
                                        timeout=current_app.config['CONVERSION_TIMEOUT'], env={})
 
     return completed_process.returncode
+
 
 def convert_caff_to_tga(source: str, destination: str):
     """
