@@ -2,12 +2,26 @@ import tempfile
 import os
 import os.path
 import shutil
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 from flask import Flask, current_app
 
 from config import Config
 
 from utils import write_file_to_fd_while_calculating_md5, create_md5_sum_for_file
 from converter import convert_caff_to_tga, convert_tga_to_png
+
+# Setup sentry
+if Config.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=Config.SENTRY_DSN,
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=True,
+        release=Config.RELEASE_ID,
+        environment=Config.RELEASEMODE,
+        _experiments={"auto_enabling_integrations": True}
+    )
 
 app = Flask(__name__)
 app.config.from_object(Config)
