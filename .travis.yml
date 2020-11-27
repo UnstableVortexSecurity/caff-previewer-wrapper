@@ -1,0 +1,28 @@
+language: python
+python:
+  - "3.9"
+arch: amd64
+os: linux
+dist: focal
+virt: vm
+cache: pip
+
+services:
+  - docker
+
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin registry.kmlabz.com
+
+install:
+  - pip3 install pylint bandit mccabe
+
+before_script:
+  - find . -name "*.py" -exec python3 -m py_compile '{}' \;
+  - find . -name "*.py" -exec pylint '{}' + || if [ $? -eq 1 ]; then echo "you fail"; fi
+  - find . -name "*.py" -exec python3 -m mccabe --min 3 '{}' + || if [ $? -eq 1 ]; then echo "you fail"; fi
+  - bandit -r .
+
+script:
+  - docker build -t="registry.kmlabz.com/unstablevortex/caff-previewer-wrapper:$TRAVIS_BUILD_NUMBER" .
+  - docker tag "registry.kmlabz.com/unstablevortex/caff-previewer-wrapper:$TRAVIS_BUILD_NUMBER" "registry.kmlabz.com/unstablevortex/caff-previewer-wrapper:latest"
+  - docker push "registry.kmlabz.com/unstablevortex/caff-previewer-wrapper"
